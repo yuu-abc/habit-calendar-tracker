@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>習慣トラッカー</title>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+
+    :root {
+      --navy:#1B2A3F; --bg:#F3F6F5; --white:#fff;
+      --g100:#EFF2F1; --g200:#DCE3E0; --g400:#8A968F; --g600:#5A6660;
+    }
+
+    body {
+      font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Segoe UI',sans-serif;
+      background:var(--bg); color:var(--navy);
+      min-height:100vh; padding-bottom:40px;
+    }
+
+    /* ─── Header ─── */
+    header {
+      position:sticky; top:0; z-index:100;
+      background:var(--white); border-bottom:1.5px solid var(--navy);
+      padding:12px 16px;
+    }
+    .h-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
+    .h-title { font-size:16px; font-weight:800; }
+    .h-note {
+      font-size:10px; color:var(--g400); font-weight:500;
+      background:var(--g100); border-radius:8px; padding:3px 9px;
+    }
+
+    main { padding:16px 14px; max-width:520px; margin:0 auto; }
+
+    /* ─── Add habit ─── */
+    .add-row { display:flex; gap:8px; margin-bottom:20px; }
+    #habitInp {
+      flex:1; border:1.5px solid var(--g200); border-radius:12px;
+      padding:12px 14px; font-size:15px; color:var(--navy);
+      background:var(--white); outline:none; font-family:inherit;
+      -webkit-appearance:none;
+    }
+    #habitInp:focus { border-color:var(--navy); }
+    #habitInp::placeholder { color:var(--g400); }
+    .add-btn {
+      flex-shrink:0; padding:12px 18px;
+      background:var(--navy); color:#fff; border:none;
+      border-radius:12px; font-size:14px; font-weight:700;
+      cursor:pointer; font-family:inherit;
+    }
+    .add-btn:active { background:#2D3F5C; }
+
+    /* ─── Habit card ─── */
+    .habit-card {
+      background:var(--white); border-radius:16px;
+      border:1px solid var(--g200); padding:14px 14px 16px;
+      margin-bottom:16px;
+      box-shadow:0 2px 10px rgba(27,42,63,.05);
+    }
+    .hc-top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+    .hc-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
+    .hc-name { font-size:15px; font-weight:700; flex:1; min-width:0; word-break:break-word; }
+    .hc-streak {
+      flex-shrink:0; font-size:12px; font-weight:800;
+      padding:4px 10px; border-radius:12px;
+      display:flex; align-items:center; gap:3px;
+      white-space:nowrap;
+    }
+    .hc-del {
+      flex-shrink:0; background:none; border:none; cursor:pointer;
+      font-size:13px; color:var(--g400); padding:3px 5px; border-radius:6px;
+    }
+    .hc-del:active { color:#DC2626; background:#FEF2F2; }
+
+    /* Weekday header */
+    .wk-hdr {
+      display:grid; grid-template-columns:repeat(7,28px);
+      column-gap:8px; margin-bottom:6px; padding-left:2px;
+    }
+    .wk-hdr span {
+      font-size:9px; font-weight:700; color:var(--g400);
+      text-align:center; letter-spacing:.02em;
+    }
+
+    /* Calendar grid */
+    .cal-grid {
+      display:grid; grid-template-columns:repeat(7,28px);
+      column-gap:8px; row-gap:8px;
+      overflow-x:auto; padding:2px 2px 4px;
+    }
+    .day-cell {
+      position:relative; width:28px; height:28px; border-radius:50%;
+      background:var(--g100); display:flex; align-items:center; justify-content:center;
+      font-size:9px; font-weight:600; color:var(--g400);
+      cursor:pointer; transition:background .15s, color .15s; flex-shrink:0;
+    }
+    .day-cell.filled { color:#fff; }
+    .day-cell.today { box-shadow:0 0 0 2px var(--navy); }
+    .day-cell.future { visibility:hidden; pointer-events:none; }
+    .day-cell.linked-right::after {
+      content:''; position:absolute; left:100%; top:50%;
+      transform:translateY(-50%); width:8px; height:4px;
+    }
+    .day-cell:active { filter:brightness(.92); }
+
+    /* Empty state */
+    .empty-state { text-align:center; padding:56px 20px; color:var(--g400); }
+    .empty-state .ei { font-size:36px; margin-bottom:12px; }
+    .empty-state p { font-size:13px; line-height:1.7; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="h-top">
+      <span class="h-title">🔗 習慣トラッカー</span>
+      <span class="h-note">保存されません</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="add-row">
+      <input id="habitInp" type="text" placeholder="新しい習慣を入力…（例：運動、読書）" maxlength="30" enterkeyhint="done" autocomplete="off"/>
+      <button class="add-btn" id="addBtn">追加</button>
+    </div>
+
+    <div id="habitsList"></div>
+  </main>
+
+<script>
+/* ═══════════════════════════
+   Config — NOTE: no localStorage per request; all state lives in memory only
+═══════════════════════════ */
+const PALETTE = ['#4B6BFB','#E0824A','#2E9E6C','#9B5DE0','#E0566A','#CC9A16'];
+const WEEKDAYS = ['日','月','火','水','木','金','土'];
+
+let habits = [
+  { id:0, name:'運動する',   color:PALETTE[0], days:new Set() },
+  { id:1, name:'読書',       color:PALETTE[1], days:new Set() },
+];
+let uid = 2;
+
+// Seed a small demo streak so the chain effect is visible immediately
+(function seed(){
+  const today = new Date();
+  for (let i=0;i<4;i++){
+    const d = new Date(today); d.setDate(today.getDate()-i);
+    habits[0].days.add(fmt(d));
+  }
+  const d2 = new Date(today); d2.setDate(today.getDate()-1);
+  habits[1].days.add(fmt(d2));
+})();
+
+/* ═══════════════════════════
+   Date helpers
+═══════════════════════════ */
+function fmt(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function startOfToday() {
+  const d = new Date(); d.setHours(0,0,0,0); return d;
+}
+
+/* Build a grid: full weeks (Sun-Sat), ending on the most recent Saturday-aligned
+   row that contains today. Roughly 5 weeks back. */
+function buildGrid() {
+  const end = startOfToday();
+  const start = new Date(end); start.setDate(end.getDate() - 34);
+  while (start.getDay() !== 0) start.setDate(start.getDate() - 1); // back to Sunday
+
+  const cells = [];
+  const d = new Date(start);
+  while (d <= end) { cells.push(new Date(d)); d.setDate(d.getDate()+1); }
+  // pad to complete last row
+  while (cells.length % 7 !== 0) {
+    const next = new Date(cells[cells.length-1]); next.setDate(next.getDate()+1);
+    cells.push(next);
+  }
+  return cells;
+}
+
+/* ═══════════════════════════
+   Streak calc
+═══════════════════════════ */
+function calcStreak(days) {
+  let d = startOfToday();
+  if (!days.has(fmt(d))) d.setDate(d.getDate()-1); // today pending doesn't break streak
+  let streak = 0;
+  while (days.has(fmt(d))) { streak++; d.setDate(d.getDate()-1); }
+  return streak;
+}
+
+/* ═══════════════════════════
+   Render
+═══════════════════════════ */
+function render() {
+  const list = document.getElementById('habitsList');
+
+  if (!habits.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="ei">🔗</div>
+        <p>習慣を登録して、チェーンをつなげていきましょう。<br>毎日続けると鎖がつながります。</p>
+      </div>`;
+    return;
+  }
+
+  const todayStr = fmt(startOfToday());
+  const grid = buildGrid();
+
+  list.innerHTML = habits.map(h => {
+    const streak = calcStreak(h.days);
+
+    const wkHdr = WEEKDAYS.map(w => `<span>${w}</span>`).join('');
+
+    const cellsHtml = grid.map((date, i) => {
+      const ds = fmt(date);
+      const isFuture = date > startOfToday();
+      const isToday  = ds === todayStr;
+      const filled   = h.days.has(ds);
+
+      const nextInRow = (i % 7 !== 6) ? grid[i+1] : null;
+      const linkedRight = filled && nextInRow && !isFuture && h.days.has(fmt(nextInRow));
+
+      const cls = ['day-cell'];
+      if (filled) cls.push('filled');
+      if (isToday) cls.push('today');
+      if (isFuture) cls.push('future');
+      if (linkedRight) cls.push('linked-right');
+
+      const style = filled
+        ? `background:${h.color};`
+        : '';
+      const afterStyle = linkedRight ? `style="${style}--lc:${h.color}"` : (style ? `style="${style}"` : '');
+
+      return `<div class="${cls.join(' ')}" data-hid="${h.id}" data-date="${ds}" ${afterStyle}>${date.getDate()}</div>`;
+    }).join('');
+
+    return `
+      <div class="habit-card">
+        <div class="hc-top">
+          <div class="hc-dot" style="background:${h.color}"></div>
+          <span class="hc-name">${esc(h.name)}</span>
+          <span class="hc-streak" style="background:${h.color}22;color:${h.color}">🔥 ${streak}日</span>
+          <button class="hc-del" data-hid="${h.id}">✕</button>
+        </div>
+        <div class="wk-hdr">${wkHdr}</div>
+        <div class="cal-grid">${cellsHtml}</div>
+      </div>`;
+  }).join('');
+
+  // Fix the linked-right connector color (::after can't read data-attr, so inject a <style> per habit is overkill —
+  // instead set the connector via inline CSS variable and shared rule)
+  document.querySelectorAll('.day-cell.linked-right').forEach(el => {
+    const color = el.style.getPropertyValue('--lc');
+  });
+
+  // Wire toggle
+  list.querySelectorAll('.day-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const hid = parseInt(cell.dataset.hid);
+      const date = cell.dataset.date;
+      const h = habits.find(x => x.id === hid);
+      if (!h) return;
+      if (h.days.has(date)) h.days.delete(date); else h.days.add(date);
+      render();
+    });
+  });
+
+  // Wire delete
+  list.querySelectorAll('.hc-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      habits = habits.filter(h => h.id !== parseInt(btn.dataset.hid));
+      render();
+    });
+  });
+}
+
+/* Connector bar needs actual color via CSS custom prop read at paint time —
+   simplest robust approach: use box-shadow trick with inline background already set on ::after via a
+   dynamically injected stylesheet keyed by habit id */
+function injectConnectorStyles() {
+  const styleEl = document.getElementById('connectorStyle') || (() => {
+    const s = document.createElement('style'); s.id = 'connectorStyle'; document.head.appendChild(s); return s;
+  })();
+  let css = '';
+  habits.forEach(h => {
+    css += `.day-cell.linked-right[data-hid="${h.id}"]::after{background:${h.color};}`;
+  });
+  styleEl.textContent = css;
+}
+
+const origRender = render;
+render = function() { origRender(); injectConnectorStyles(); };
+
+/* ═══════════════════════════
+   Add habit
+═══════════════════════════ */
+function addHabit() {
+  const inp = document.getElementById('habitInp');
+  const name = inp.value.trim();
+  if (!name) { inp.focus(); return; }
+  habits.push({ id: uid++, name, color: PALETTE[habits.length % PALETTE.length], days: new Set() });
+  inp.value = '';
+  render();
+}
+
+/* ═══════════════════════════
+   Util
+═══════════════════════════ */
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ═══════════════════════════
+   Init
+═══════════════════════════ */
+document.getElementById('addBtn').addEventListener('click', addHabit);
+document.getElementById('habitInp').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); addHabit(); }
+});
+
+render();
+</script>
+</body>
+</html>
