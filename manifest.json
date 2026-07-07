@@ -1,0 +1,15 @@
+{
+  "name": "習慣トラッカー",
+  "short_name": "習慣",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F3F6F5",
+  "theme_color": "#1B2A3F",
+  "icons": [
+    {
+      "src": "app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
