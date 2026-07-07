@@ -10,7 +10,8 @@
 
     :root {
       --navy:#1B2A3F; --bg:#F3F6F5; --white:#fff;
-      --g100:#EFF2F1; --g200:#DCE3E0; --g400:#8A968F; --g600:#5A6660;
+      --g100:#EFF2F1; --g200:#DCE3E0; --g300:#C8D1CD; --g400:#8A968F; --g600:#5A6660;
+      --green:#2E9E6C; --red:#DC2626; --soft-yellow:#FFF8E1;
     }
 
     body {
@@ -19,46 +20,99 @@
       min-height:100vh; padding-bottom:40px;
     }
 
+    button, input { font:inherit; }
+    button { touch-action:manipulation; }
+
     /* ─── Header ─── */
     header {
       position:sticky; top:0; z-index:100;
-      background:var(--white); border-bottom:1.5px solid var(--navy);
-      padding:12px 16px;
+      background:rgba(255,255,255,.96); border-bottom:1.5px solid var(--navy);
+      padding:12px 16px; backdrop-filter:blur(10px);
     }
-    .h-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
-    .h-title { font-size:16px; font-weight:800; }
+    .h-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:2px; }
+    .h-title { font-size:16px; font-weight:800; white-space:nowrap; }
     .h-note {
-      font-size:10px; color:var(--g400); font-weight:500;
-      background:var(--g100); border-radius:8px; padding:3px 9px;
+      font-size:10px; color:var(--green); font-weight:800;
+      background:#EAF7F0; border-radius:999px; padding:4px 10px;
+      white-space:nowrap;
     }
 
-    main { padding:16px 14px; max-width:520px; margin:0 auto; }
+    main { padding:16px 14px; max-width:620px; margin:0 auto; }
 
     /* ─── Add habit ─── */
-    .add-row { display:flex; gap:8px; margin-bottom:20px; }
+    .add-row { display:flex; gap:8px; margin-bottom:16px; }
     #habitInp {
-      flex:1; border:1.5px solid var(--g200); border-radius:12px;
-      padding:12px 14px; font-size:15px; color:var(--navy);
+      flex:1; min-width:0; border:1.5px solid var(--g200); border-radius:12px;
+      padding:13px 14px; font-size:15px; color:var(--navy);
       background:var(--white); outline:none; font-family:inherit;
       -webkit-appearance:none;
     }
-    #habitInp:focus { border-color:var(--navy); }
+    #habitInp:focus { border-color:var(--navy); box-shadow:0 0 0 3px rgba(27,42,63,.08); }
     #habitInp::placeholder { color:var(--g400); }
-    .add-btn {
-      flex-shrink:0; padding:12px 18px;
+    .add-btn, .month-btn {
+      min-height:44px; flex-shrink:0; padding:11px 15px;
       background:var(--navy); color:#fff; border:none;
       border-radius:12px; font-size:14px; font-weight:700;
       cursor:pointer; font-family:inherit;
     }
-    .add-btn:active { background:#2D3F5C; }
+    .add-btn:active, .month-btn:active { transform:translateY(1px); filter:brightness(1.08); }
 
-    /* ─── Habit card ─── */
-    .habit-card {
+    /* ─── Shared panels ─── */
+    .panel, .habit-card {
       background:var(--white); border-radius:16px;
-      border:1px solid var(--g200); padding:14px 14px 16px;
-      margin-bottom:16px;
+      border:1px solid var(--g200);
       box-shadow:0 2px 10px rgba(27,42,63,.05);
     }
+
+    /* ─── Monthly calendar ─── */
+    .month-panel { padding:14px; margin-bottom:16px; }
+    .month-top { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+    .month-title { font-size:18px; font-weight:900; letter-spacing:.02em; }
+    .month-actions { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px; }
+    .month-btn {
+      min-width:0; padding:10px 8px; background:var(--white); color:var(--navy);
+      border:1.5px solid var(--g200); font-size:13px;
+    }
+    .month-btn.today-btn { background:var(--navy); color:#fff; border-color:var(--navy); }
+    .month-weekdays, .month-grid { display:grid; grid-template-columns:repeat(7, minmax(0, 1fr)); gap:6px; }
+    .month-weekdays { margin-bottom:7px; }
+    .month-weekdays span { text-align:center; color:var(--g400); font-size:11px; font-weight:800; }
+    .month-day {
+      min-height:58px; border:1px solid var(--g200); border-radius:13px;
+      background:#FAFBFB; color:var(--navy); padding:7px 4px;
+      display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+      cursor:pointer; transition:background .15s, border-color .15s, opacity .15s;
+    }
+    .month-day:active { filter:brightness(.96); }
+    .month-day.outside { opacity:.42; background:var(--g100); }
+    .month-day.future { opacity:.35; cursor:not-allowed; }
+    .month-day.selected { border-color:var(--navy); box-shadow:0 0 0 2px rgba(27,42,63,.12); }
+    .month-day.today { border-color:var(--navy); }
+    .month-day.all-done { background:#EAF7F0; border-color:#B7DFC8; }
+    .day-num { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:850; }
+    .month-day.today .day-num { background:var(--navy); color:#fff; }
+    .day-count { font-size:11px; font-weight:850; color:var(--g400); line-height:1; }
+    .month-day.some-done .day-count { color:var(--green); }
+    .month-day.all-done .day-count { color:var(--green); background:#fff; border-radius:999px; padding:4px 6px; }
+    .month-day.no-habits .day-count { font-size:10px; font-weight:700; }
+
+    /* ─── Selected day ─── */
+    .selected-panel { padding:14px; margin-bottom:16px; }
+    .selected-title { font-size:16px; font-weight:900; margin-bottom:10px; }
+    .daily-list { display:flex; flex-direction:column; gap:8px; }
+    .daily-item {
+      width:100%; min-height:48px; border:1px solid var(--g200); border-radius:12px;
+      background:#FAFBFB; display:flex; align-items:center; gap:10px; padding:10px 12px;
+      text-align:left; color:var(--navy); cursor:pointer;
+    }
+    .daily-item:active { background:var(--g100); }
+    .daily-check { width:24px; height:24px; border-radius:7px; border:1.5px solid var(--g300); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; background:#fff; }
+    .daily-item.done .daily-check { color:#fff; border-color:transparent; }
+    .daily-name { flex:1; font-size:15px; font-weight:750; word-break:break-word; }
+    .muted-text { color:var(--g400); font-size:13px; line-height:1.7; text-align:center; padding:16px 8px; }
+
+    /* ─── Habit card ─── */
+    .habit-card { padding:14px 14px 16px; margin-bottom:16px; }
     .hc-top { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
     .hc-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
     .hc-name { font-size:15px; font-weight:700; flex:1; min-width:0; word-break:break-word; }
@@ -70,13 +124,12 @@
     }
     .hc-del {
       flex-shrink:0; background:none; border:none; cursor:pointer;
-      font-size:13px; color:var(--g400); padding:3px 5px; border-radius:6px;
+      font-size:13px; color:var(--g400); padding:7px 8px; border-radius:8px;
     }
-    .hc-del:active { color:#DC2626; background:#FEF2F2; }
+    .hc-del:active { color:var(--red); background:#FEF2F2; }
 
-    /* Weekday header */
     .wk-hdr {
-      display:grid; grid-template-columns:repeat(7,28px);
+      display:grid; grid-template-columns:repeat(7, minmax(28px, 1fr));
       column-gap:8px; margin-bottom:6px; padding-left:2px;
     }
     .wk-hdr span {
@@ -84,31 +137,43 @@
       text-align:center; letter-spacing:.02em;
     }
 
-    /* Calendar grid */
     .cal-grid {
-      display:grid; grid-template-columns:repeat(7,28px);
-      column-gap:8px; row-gap:8px;
-      overflow-x:auto; padding:2px 2px 4px;
+      display:grid; grid-template-columns:repeat(7, minmax(28px, 1fr));
+      column-gap:8px; row-gap:8px; padding:2px 2px 4px;
     }
     .day-cell {
-      position:relative; width:28px; height:28px; border-radius:50%;
+      position:relative; width:30px; height:30px; border-radius:50%;
       background:var(--g100); display:flex; align-items:center; justify-content:center;
-      font-size:9px; font-weight:600; color:var(--g400);
+      justify-self:center; font-size:10px; font-weight:700; color:var(--g400);
       cursor:pointer; transition:background .15s, color .15s; flex-shrink:0;
     }
     .day-cell.filled { color:#fff; }
     .day-cell.today { box-shadow:0 0 0 2px var(--navy); }
-    .day-cell.future { visibility:hidden; pointer-events:none; }
+    .day-cell.future { opacity:.32; pointer-events:none; }
     .day-cell.linked-right::after {
       content:''; position:absolute; left:100%; top:50%;
       transform:translateY(-50%); width:8px; height:4px;
     }
     .day-cell:active { filter:brightness(.92); }
 
-    /* Empty state */
-    .empty-state { text-align:center; padding:56px 20px; color:var(--g400); }
+    .empty-state { text-align:center; padding:40px 20px; color:var(--g400); }
     .empty-state .ei { font-size:36px; margin-bottom:12px; }
     .empty-state p { font-size:13px; line-height:1.7; }
+
+    @media (max-width:420px) {
+      main { padding:14px 10px; }
+      .add-row { gap:7px; }
+      .add-btn { padding-inline:13px; }
+      .month-panel, .selected-panel, .habit-card { border-radius:14px; padding:12px; }
+      .month-grid, .month-weekdays { gap:4px; }
+      .month-day { min-height:54px; border-radius:11px; padding:6px 2px; }
+      .day-count { font-size:10px; }
+      .month-actions { gap:6px; }
+      .month-btn { font-size:12px; padding-inline:4px; }
+      .cal-grid, .wk-hdr { column-gap:5px; }
+      .day-cell { width:29px; height:29px; }
+      .day-cell.linked-right::after { width:5px; }
+    }
   </style>
 </head>
 <body>
@@ -116,7 +181,7 @@
   <header>
     <div class="h-top">
       <span class="h-title">🔗 習慣トラッカー</span>
-      <span class="h-note">保存されません</span>
+      <span class="h-note">自動保存</span>
     </div>
   </header>
 
@@ -126,54 +191,94 @@
       <button class="add-btn" id="addBtn">追加</button>
     </div>
 
+    <section class="panel month-panel" aria-label="月間カレンダー">
+      <div class="month-top">
+        <h1 class="month-title" id="monthTitle"></h1>
+      </div>
+      <div class="month-actions">
+        <button class="month-btn" id="prevMonthBtn" type="button">前月</button>
+        <button class="month-btn today-btn" id="todayBtn" type="button">今日へ戻る</button>
+        <button class="month-btn" id="nextMonthBtn" type="button">次月</button>
+      </div>
+      <div class="month-weekdays" id="monthWeekdays"></div>
+      <div class="month-grid" id="monthGrid"></div>
+    </section>
+
+    <section class="panel selected-panel" aria-label="選択した日の習慣一覧">
+      <h2 class="selected-title" id="selectedTitle"></h2>
+      <div class="daily-list" id="dailyList"></div>
+    </section>
+
     <div id="habitsList"></div>
   </main>
 
 <script>
 /* ═══════════════════════════
-   Config — NOTE: no localStorage per request; all state lives in memory only
+   Config and state
 ═══════════════════════════ */
+const STORAGE_KEY = 'habit-calendar-tracker:v2';
 const PALETTE = ['#4B6BFB','#E0824A','#2E9E6C','#9B5DE0','#E0566A','#CC9A16'];
 const WEEKDAYS = ['日','月','火','水','木','金','土'];
 
-let habits = [
-  { id:0, name:'運動する',   color:PALETTE[0], days:new Set() },
-  { id:1, name:'読書',       color:PALETTE[1], days:new Set() },
-];
-let uid = 2;
-
-// Seed a small demo streak so the chain effect is visible immediately
-(function seed(){
-  const today = new Date();
-  for (let i=0;i<4;i++){
-    const d = new Date(today); d.setDate(today.getDate()-i);
-    habits[0].days.add(fmt(d));
-  }
-  const d2 = new Date(today); d2.setDate(today.getDate()-1);
-  habits[1].days.add(fmt(d2));
-})();
+let habits = [];
+let uid = 0;
+let viewingMonth = startOfMonth(startOfToday());
+let selectedDate = fmt(startOfToday());
 
 /* ═══════════════════════════
-   Date helpers
+   Date helpers: use local date parts to avoid UTC timezone drift
 ═══════════════════════════ */
 function fmt(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
+function parseDate(dateStr) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
 function startOfToday() {
   const d = new Date(); d.setHours(0,0,0,0); return d;
 }
+function startOfMonth(d) {
+  return new Date(d.getFullYear(), d.getMonth(), 1);
+}
+function sameMonth(a, b) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
+}
+function addMonths(d, amount) {
+  return new Date(d.getFullYear(), d.getMonth() + amount, 1);
+}
+function displayDate(dateStr) {
+  const d = parseDate(dateStr);
+  return `${d.getMonth()+1}月${d.getDate()}日`;
+}
+function monthLabel(d) {
+  return `${d.getFullYear()}年${d.getMonth()+1}月`;
+}
+function isFutureDate(dateStr) {
+  return parseDate(dateStr) > startOfToday();
+}
 
-/* Build a grid: full weeks (Sun-Sat), ending on the most recent Saturday-aligned
-   row that contains today. Roughly 5 weeks back. */
-function buildGrid() {
+function buildMonthGrid(monthDate) {
+  const first = startOfMonth(monthDate);
+  const start = new Date(first);
+  start.setDate(first.getDate() - first.getDay());
+  const cells = [];
+  const d = new Date(start);
+  for (let i = 0; i < 42; i++) {
+    cells.push(new Date(d));
+    d.setDate(d.getDate() + 1);
+  }
+  return cells;
+}
+
+function buildHabitGrid() {
   const end = startOfToday();
   const start = new Date(end); start.setDate(end.getDate() - 34);
-  while (start.getDay() !== 0) start.setDate(start.getDate() - 1); // back to Sunday
+  while (start.getDay() !== 0) start.setDate(start.getDate() - 1);
 
   const cells = [];
   const d = new Date(start);
   while (d <= end) { cells.push(new Date(d)); d.setDate(d.getDate()+1); }
-  // pad to complete last row
   while (cells.length % 7 !== 0) {
     const next = new Date(cells[cells.length-1]); next.setDate(next.getDate()+1);
     cells.push(next);
@@ -182,25 +287,153 @@ function buildGrid() {
 }
 
 /* ═══════════════════════════
-   Streak calc
+   Persistence
+═══════════════════════════ */
+function saveState() {
+  const payload = {
+    uid,
+    habits: habits.map(h => ({ id:h.id, name:h.name, color:h.color, days:[...h.days].sort() }))
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return seedInitialHabits();
+    const data = JSON.parse(raw);
+    habits = Array.isArray(data.habits) ? data.habits.map((h, i) => ({
+      id: Number.isFinite(h.id) ? h.id : i,
+      name: String(h.name || '習慣'),
+      color: h.color || PALETTE[i % PALETTE.length],
+      days: new Set(Array.isArray(h.days) ? h.days : [])
+    })) : [];
+    uid = Number.isFinite(data.uid) ? data.uid : Math.max(0, ...habits.map(h => h.id)) + 1;
+  } catch (e) {
+    seedInitialHabits();
+  }
+}
+
+function seedInitialHabits() {
+  habits = [
+    { id:0, name:'運動する', color:PALETTE[0], days:new Set() },
+    { id:1, name:'読書', color:PALETTE[1], days:new Set() },
+    { id:2, name:'中国語', color:PALETTE[2], days:new Set() }
+  ];
+  uid = 3;
+  const today = startOfToday();
+  for (let i = 0; i < 4; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    habits[0].days.add(fmt(d));
+  }
+  habits[1].days.add(fmt(today));
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+  habits[1].days.add(fmt(yesterday));
+  saveState();
+}
+
+/* ═══════════════════════════
+   Calculations
 ═══════════════════════════ */
 function calcStreak(days) {
   let d = startOfToday();
-  if (!days.has(fmt(d))) d.setDate(d.getDate()-1); // today pending doesn't break streak
+  if (!days.has(fmt(d))) d.setDate(d.getDate()-1);
   let streak = 0;
   while (days.has(fmt(d))) { streak++; d.setDate(d.getDate()-1); }
   return streak;
+}
+
+function dayStats(dateStr) {
+  const total = habits.length;
+  const done = habits.filter(h => h.days.has(dateStr)).length;
+  return { done, total };
+}
+
+function toggleHabit(habitId, dateStr) {
+  if (isFutureDate(dateStr)) return;
+  const habit = habits.find(h => h.id === habitId);
+  if (!habit) return;
+  if (habit.days.has(dateStr)) habit.days.delete(dateStr); else habit.days.add(dateStr);
+  saveState();
+  render();
 }
 
 /* ═══════════════════════════
    Render
 ═══════════════════════════ */
 function render() {
-  const list = document.getElementById('habitsList');
+  renderMonthCalendar();
+  renderSelectedDay();
+  renderHabitCards();
+  injectConnectorStyles();
+}
 
+function renderMonthCalendar() {
+  const title = document.getElementById('monthTitle');
+  const weekdays = document.getElementById('monthWeekdays');
+  const gridEl = document.getElementById('monthGrid');
+  const todayStr = fmt(startOfToday());
+
+  title.textContent = monthLabel(viewingMonth);
+  weekdays.innerHTML = WEEKDAYS.map(w => `<span>${w}</span>`).join('');
+  gridEl.innerHTML = buildMonthGrid(viewingMonth).map(date => {
+    const ds = fmt(date);
+    const { done, total } = dayStats(ds);
+    const isFuture = isFutureDate(ds);
+    const cls = ['month-day'];
+    if (!sameMonth(date, viewingMonth)) cls.push('outside');
+    if (ds === todayStr) cls.push('today');
+    if (ds === selectedDate) cls.push('selected');
+    if (isFuture) cls.push('future');
+    if (total === 0) cls.push('no-habits');
+    else if (done === total) cls.push('all-done');
+    else if (done > 0) cls.push('some-done');
+
+    const label = total ? `${done}/${total}` : '習慣なし';
+    return `<button class="${cls.join(' ')}" type="button" data-date="${ds}" ${isFuture ? 'disabled aria-disabled="true"' : ''}>
+      <span class="day-num">${date.getDate()}</span>
+      <span class="day-count">${label}</span>
+    </button>`;
+  }).join('');
+
+  gridEl.querySelectorAll('.month-day:not(.future)').forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedDate = btn.dataset.date;
+      viewingMonth = startOfMonth(parseDate(selectedDate));
+      render();
+    });
+  });
+}
+
+function renderSelectedDay() {
+  const title = document.getElementById('selectedTitle');
+  const list = document.getElementById('dailyList');
+  const isFuture = isFutureDate(selectedDate);
+
+  title.textContent = displayDate(selectedDate);
+  if (!habits.length) {
+    list.innerHTML = '<p class="muted-text">習慣を追加すると、この日のチェック一覧が表示されます。</p>';
+    return;
+  }
+
+  list.innerHTML = habits.map(h => {
+    const done = h.days.has(selectedDate);
+    return `<button class="daily-item ${done ? 'done' : ''}" type="button" data-hid="${h.id}" ${isFuture ? 'disabled' : ''}>
+      <span class="daily-check" style="${done ? `background:${h.color}` : ''}">${done ? '✓' : ''}</span>
+      <span class="daily-name">${done ? '✅' : '⬜'} ${esc(h.name)}</span>
+    </button>`;
+  }).join('');
+
+  list.querySelectorAll('.daily-item').forEach(btn => {
+    btn.addEventListener('click', () => toggleHabit(parseInt(btn.dataset.hid, 10), selectedDate));
+  });
+}
+
+function renderHabitCards() {
+  const list = document.getElementById('habitsList');
   if (!habits.length) {
     list.innerHTML = `
-      <div class="empty-state">
+      <div class="empty-state panel">
         <div class="ei">🔗</div>
         <p>習慣を登録して、チェーンをつなげていきましょう。<br>毎日続けると鎖がつながります。</p>
       </div>`;
@@ -208,34 +441,22 @@ function render() {
   }
 
   const todayStr = fmt(startOfToday());
-  const grid = buildGrid();
-
+  const grid = buildHabitGrid();
   list.innerHTML = habits.map(h => {
     const streak = calcStreak(h.days);
-
     const wkHdr = WEEKDAYS.map(w => `<span>${w}</span>`).join('');
-
     const cellsHtml = grid.map((date, i) => {
       const ds = fmt(date);
-      const isFuture = date > startOfToday();
-      const isToday  = ds === todayStr;
-      const filled   = h.days.has(ds);
-
+      const isFuture = isFutureDate(ds);
+      const filled = h.days.has(ds);
       const nextInRow = (i % 7 !== 6) ? grid[i+1] : null;
       const linkedRight = filled && nextInRow && !isFuture && h.days.has(fmt(nextInRow));
-
       const cls = ['day-cell'];
       if (filled) cls.push('filled');
-      if (isToday) cls.push('today');
+      if (ds === todayStr) cls.push('today');
       if (isFuture) cls.push('future');
       if (linkedRight) cls.push('linked-right');
-
-      const style = filled
-        ? `background:${h.color};`
-        : '';
-      const afterStyle = linkedRight ? `style="${style}--lc:${h.color}"` : (style ? `style="${style}"` : '');
-
-      return `<div class="${cls.join(' ')}" data-hid="${h.id}" data-date="${ds}" ${afterStyle}>${date.getDate()}</div>`;
+      return `<button class="${cls.join(' ')}" type="button" data-hid="${h.id}" data-date="${ds}" style="${filled ? `background:${h.color};` : ''}" ${isFuture ? 'disabled' : ''}>${date.getDate()}</button>`;
     }).join('');
 
     return `
@@ -244,59 +465,38 @@ function render() {
           <div class="hc-dot" style="background:${h.color}"></div>
           <span class="hc-name">${esc(h.name)}</span>
           <span class="hc-streak" style="background:${h.color}22;color:${h.color}">🔥 ${streak}日</span>
-          <button class="hc-del" data-hid="${h.id}">✕</button>
+          <button class="hc-del" data-hid="${h.id}" type="button" aria-label="${esc(h.name)}を削除">✕</button>
         </div>
         <div class="wk-hdr">${wkHdr}</div>
         <div class="cal-grid">${cellsHtml}</div>
       </div>`;
   }).join('');
 
-  // Fix the linked-right connector color (::after can't read data-attr, so inject a <style> per habit is overkill —
-  // instead set the connector via inline CSS variable and shared rule)
-  document.querySelectorAll('.day-cell.linked-right').forEach(el => {
-    const color = el.style.getPropertyValue('--lc');
-  });
-
-  // Wire toggle
   list.querySelectorAll('.day-cell').forEach(cell => {
-    cell.addEventListener('click', () => {
-      const hid = parseInt(cell.dataset.hid);
-      const date = cell.dataset.date;
-      const h = habits.find(x => x.id === hid);
-      if (!h) return;
-      if (h.days.has(date)) h.days.delete(date); else h.days.add(date);
-      render();
-    });
+    cell.addEventListener('click', () => toggleHabit(parseInt(cell.dataset.hid, 10), cell.dataset.date));
   });
 
-  // Wire delete
   list.querySelectorAll('.hc-del').forEach(btn => {
     btn.addEventListener('click', () => {
-      habits = habits.filter(h => h.id !== parseInt(btn.dataset.hid));
+      const habit = habits.find(h => h.id === parseInt(btn.dataset.hid, 10));
+      if (!habit) return;
+      if (!confirm(`「${habit.name}」を削除しますか？\n記録もすべて削除されます。`)) return;
+      habits = habits.filter(h => h.id !== habit.id);
+      saveState();
       render();
     });
   });
 }
 
-/* Connector bar needs actual color via CSS custom prop read at paint time —
-   simplest robust approach: use box-shadow trick with inline background already set on ::after via a
-   dynamically injected stylesheet keyed by habit id */
 function injectConnectorStyles() {
   const styleEl = document.getElementById('connectorStyle') || (() => {
     const s = document.createElement('style'); s.id = 'connectorStyle'; document.head.appendChild(s); return s;
   })();
-  let css = '';
-  habits.forEach(h => {
-    css += `.day-cell.linked-right[data-hid="${h.id}"]::after{background:${h.color};}`;
-  });
-  styleEl.textContent = css;
+  styleEl.textContent = habits.map(h => `.day-cell.linked-right[data-hid="${h.id}"]::after{background:${h.color};}`).join('\n');
 }
 
-const origRender = render;
-render = function() { origRender(); injectConnectorStyles(); };
-
 /* ═══════════════════════════
-   Add habit
+   Actions and util
 ═══════════════════════════ */
 function addHabit() {
   const inp = document.getElementById('habitInp');
@@ -304,22 +504,35 @@ function addHabit() {
   if (!name) { inp.focus(); return; }
   habits.push({ id: uid++, name, color: PALETTE[habits.length % PALETTE.length], days: new Set() });
   inp.value = '';
+  saveState();
   render();
 }
 
-/* ═══════════════════════════
-   Util
-═══════════════════════════ */
 function esc(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 /* ═══════════════════════════
    Init
 ═══════════════════════════ */
+loadState();
 document.getElementById('addBtn').addEventListener('click', addHabit);
 document.getElementById('habitInp').addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); addHabit(); }
+});
+document.getElementById('prevMonthBtn').addEventListener('click', () => {
+  viewingMonth = addMonths(viewingMonth, -1);
+  render();
+});
+document.getElementById('nextMonthBtn').addEventListener('click', () => {
+  viewingMonth = addMonths(viewingMonth, 1);
+  render();
+});
+document.getElementById('todayBtn').addEventListener('click', () => {
+  const today = startOfToday();
+  viewingMonth = startOfMonth(today);
+  selectedDate = fmt(today);
+  render();
 });
 
 render();
